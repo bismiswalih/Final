@@ -81,7 +81,8 @@ public class Savings extends JFrame {
         initComponents();
     }
 
-
+    //Attached githublink below
+    //https://github.com/bismiswalih/Final.git
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         Savings form1 = new Savings();
         form1.setVisible(true);
@@ -90,7 +91,7 @@ public class Savings extends JFrame {
 
     public void updateTable() throws SQLException {
         String quer1 = "Select * from savingstable";
-        PreparedStatement query = conObj.prepareStatement(quer1);
+        PreparedStatement query = conObj.prepareStatement(quer1,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
         ResultSet rs = query.executeQuery();
         DefaultTableModel df = (DefaultTableModel) table1.getModel();
         rs.last();
@@ -121,41 +122,64 @@ public class Savings extends JFrame {
         String cusInitDeposit;
         String numYears;
         String typeOfSavings;
-        cusNum = txtCusNum.getText();
-        cusName = txtCusName.getText();
-        cusInitDeposit = txtInitDeposit.getText();
-        numYears = txtNumYears.getText();
-        typeOfSavings = cboSavings.getSelectedItem().toString();
-        String query1 = "Select * from savingstable where custno =?";
-        PreparedStatement query = conObj.prepareStatement(query1);
+        try {
+            cusNum = txtCusNum.getText();
+            if (cusNum.equals("")) {
+                JOptionPane.showMessageDialog(null, "Please enter a Customer Name!");
+            } else {
+                cusName = txtCusName.getText();
+                if (cusName.equals("")) {
+                    JOptionPane.showMessageDialog(null, "Please enter the Name!");
+                } else {
+                    cusInitDeposit = txtInitDeposit.getText();
+                    if (cusInitDeposit.equals("")) {
+                        JOptionPane.showMessageDialog(null, "Please enter Deposit Amount!");
+                    } else {
+                        Integer.parseInt(cusInitDeposit);
+                        numYears = txtNumYears.getText();
+                        if (numYears.equals("")) {
+                            JOptionPane.showMessageDialog(null, "Please enter number of years!");
+                        }
+                        else {
+                            Integer.parseInt(numYears);
+                            typeOfSavings = cboSavings.getSelectedItem().toString();
+                            String query1 = "Select * from savingstable where custno =?";
+                            PreparedStatement query = conObj.prepareStatement(query1,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
 
-        query.setString(1, cusNum);
+                            query.setString(1, cusNum);
 
-        ResultSet rs = query.executeQuery();
+                            ResultSet rs = query.executeQuery();
 
-        if (rs.isBeforeFirst()) {
-            JOptionPane.showMessageDialog(null, "The record is existing");
-            //set the textboxes to space
-            return;
+                            if (rs.isBeforeFirst()) {
+                                JOptionPane.showMessageDialog(null, "The record is existing");
+                                //set the textboxes to space
+                                return;
+                            }
+
+                            String query2 = "Insert into savingstable values (?,?,?,?,?)";
+                            query = conObj.prepareStatement(query2,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+
+                            query.setString(1, cusNum);
+                            query.setString(2, cusName);
+                            query.setString(3, cusInitDeposit);
+                            query.setString(4, numYears);
+                            query.setString(5, typeOfSavings);
+
+                            query.executeUpdate();
+
+                            JOptionPane.showMessageDialog(null, "Record added");
+                            updateTable();
+                            txtCusNum.setText("");
+                            txtCusName.setText("");
+                            txtInitDeposit.setText("");
+                            txtNumYears.setText("");
+                        }
+                    }
+                }
+            }
+        }catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter number!");
         }
-
-        String query2 = "Insert into savingstable values (?,?,?,?,?)";
-        query = conObj.prepareStatement(query2);
-
-        query.setString(1, cusNum);
-        query.setString(2, cusName);
-        query.setString(3, cusInitDeposit);
-        query.setString(4, numYears);
-        query.setString(5, typeOfSavings);
-
-        query.executeUpdate();
-
-        JOptionPane.showMessageDialog(null, "Record added");
-        updateTable();
-        txtCusNum.setText("");
-        txtCusName.setText("");
-        txtInitDeposit.setText("");
-        txtNumYears.setText("");
     }
 
     private void table1MouseClicked(MouseEvent e) throws SQLException, ClassNotFoundException {
@@ -195,7 +219,7 @@ public class Savings extends JFrame {
         String oldvalue = df.getValueAt(index, 0).toString();
         if (!oldvalue.equals(cusNum)) {
             String query1 = "Select * from savingstable where custno =?";
-            PreparedStatement stmt = conObj.prepareStatement(query1);
+            PreparedStatement stmt = conObj.prepareStatement(query1,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
 
             stmt.setString(1, cusNum);
 
@@ -208,7 +232,7 @@ public class Savings extends JFrame {
             }
         }
         String query = "Update savingstable set custno=?,custname=?,cdep=?,nyears=?,savtype=? where custno=?";
-        PreparedStatement query2 = conObj.prepareStatement(query);
+        PreparedStatement query2 = conObj.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
 
         query2.setString(1, cusNum);
         query2.setString(2, cusName);
@@ -231,7 +255,7 @@ public class Savings extends JFrame {
             String cusNum;
             cusNum = txtCusNum.getText();
             String query = "Delete from savingstable where custno =?";
-            PreparedStatement query2 = conObj.prepareStatement(query);
+            PreparedStatement query2 = conObj.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
             query2.setString(1, cusNum);
             query2.executeUpdate();
             updateTable();
@@ -266,18 +290,18 @@ public class Savings extends JFrame {
         //======== this ========
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
-                "hidemode 3",
-                // columns
-                "[fill]" +
-                        "[fill]",
-                // rows
-                "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]" +
-                        "[]"));
+            "hidemode 3",
+            // columns
+            "[fill]" +
+            "[fill]",
+            // rows
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]" +
+            "[]"));
 
         //---- label1 ----
         label1.setText("Enter the Customer Number");
@@ -304,9 +328,9 @@ public class Savings extends JFrame {
         contentPane.add(label6, "cell 0 4");
 
         //---- cboSavings ----
-        cboSavings.setModel(new DefaultComboBoxModel<>(new String[]{
-                "Savings-Deluxe",
-                "Savings-Regular"
+        cboSavings.setModel(new DefaultComboBoxModel<>(new String[] {
+            "Savings-Deluxe",
+            "Savings-Regular"
         }));
         contentPane.add(cboSavings, "cell 1 4");
 
@@ -386,9 +410,9 @@ public class Savings extends JFrame {
     private JLabel label6;
     private JComboBox<String> cboSavings;
     private JScrollPane scrollPane1;
-    private JTable table1;
+    public JTable table1;
     private JScrollPane scrollPane2;
-    private JTable table2;
+    public JTable table2;
     private JButton btnAdd;
     private JButton btnEdit;
     private JButton btnDelete;
